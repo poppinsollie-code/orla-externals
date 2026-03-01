@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HappyDog — Tools</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --surface2: #16161f;
+      --border:   #1e1e2e;
+      --accent1:  #7c3aed;
+      --accent2:  #06b6d4;
+      --text:     #e2e8f0;
+      --muted:    #64748b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: -30%; left: 50%;
+      transform: translateX(-50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse, rgba(124,58,237,.15) 0%, transparent 70%);
+      pointer-events: none; z-index: 0;
+    }
+
+    canvas#particles {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: .35;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 48px; height: 64px;
+      background: rgba(10,10,15,.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.05rem; font-weight: 800; letter-spacing: .04em;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 8px; }
+
+    /* ── DROPDOWN ── */
+    .dropdown { position: relative; }
+    .dropdown-trigger {
+      display: flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: .875rem; font-weight: 600;
+      cursor: pointer; transition: border-color .2s, background .2s;
+      user-select: none;
+    }
+    .dropdown-trigger:hover { border-color: rgba(124,58,237,.5); background: #1a1a28; }
+    .dropdown-trigger svg { transition: transform .25s; }
+    .dropdown.open .dropdown-trigger svg { transform: rotate(180deg); }
+
+    .dropdown-menu {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      min-width: 260px; padding: 8px;
+      background: #13131c; border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 24px 48px rgba(0,0,0,.6);
+      opacity: 0; transform: translateY(-8px) scale(.97);
+      pointer-events: none;
+      transition: opacity .2s, transform .2s;
+      z-index: 300;
+    }
+    .dropdown.open .dropdown-menu {
+      opacity: 1; transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    .dropdown-label {
+      padding: 6px 10px 4px;
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .dropdown-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 8px;
+      text-decoration: none; color: var(--text);
+      font-size: .875rem; font-weight: 500;
+      cursor: pointer; transition: background .15s;
+    }
+    .dropdown-item:hover { background: rgba(124,58,237,.15); }
+    .dropdown-item.active { background: rgba(124,58,237,.2); color: #a78bfa; }
+    .item-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .item-info { display: flex; flex-direction: column; gap: 2px; }
+    .item-name { font-weight: 600; font-size: .875rem; }
+    .item-desc { font-size: .75rem; color: var(--muted); }
+    .item-badge {
+      margin-left: auto; padding: 2px 8px; border-radius: 999px;
+      font-size: .65rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    }
+    .badge-live { background: rgba(34,197,94,.15); color: #4ade80; }
+    .badge-soon { background: rgba(100,116,139,.12); color: var(--muted); }
+
+    .dropdown-divider { height: 1px; background: var(--border); margin: 6px 0; }
+
+    /* ── TOOL PAGES ── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      min-height: 100vh; padding: 120px 24px 80px; gap: 24px;
+    }
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 999px;
+      border: 1px solid rgba(124,58,237,.4);
+      background: rgba(124,58,237,.1);
+      font-size: .75rem; font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; color: #a78bfa;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: #a78bfa;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.5; transform:scale(1.4); }
+    }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900; line-height: 1.05; letter-spacing: -.03em;
+    }
+    .grad {
+      background: linear-gradient(135deg, #a78bfa 0%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      max-width: 520px; font-size: 1.1rem; color: var(--muted);
+      line-height: 1.7; font-weight: 400;
+    }
+
+    /* ── DOWNLOAD BTN ── */
+    .btn-wrap { position: relative; margin-top: 8px; }
+    .btn-glow {
+      position: absolute; inset: -2px; border-radius: 16px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      filter: blur(14px); opacity: .55; transition: opacity .3s;
+    }
+    .btn-wrap:hover .btn-glow { opacity: .9; }
+    .btn-download {
+      position: relative; display: inline-flex; align-items: center; gap: 12px;
+      padding: 18px 40px; border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #fff; font-size: 1rem; font-weight: 700;
+      letter-spacing: .02em; text-decoration: none;
+      transition: transform .2s, filter .2s;
+    }
+    .btn-download:hover  { transform: translateY(-2px); filter: brightness(1.1); }
+    .btn-download:active { transform: translateY(0); }
+    .btn-icon { width: 20px; height: 20px; animation: bob 2s ease-in-out infinite; }
+    @keyframes bob {
+      0%,100% { transform:translateY(0); }
+      50%      { transform:translateY(3px); }
+    }
+    .btn-sub { margin-top: 12px; font-size: .78rem; color: var(--muted); }
+
+    /* ── FEATURES ── */
+    .features {
+      position: relative; z-index: 1;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px; max-width: 1000px; margin: 0 auto; padding: 0 24px 120px;
+    }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 28px;
+      transition: border-color .3s, transform .3s;
+    }
+    .card:hover { border-color: rgba(124,58,237,.5); transform: translateY(-4px); }
+    .card-icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .card h3 { font-size: .95rem; font-weight: 700; margin-bottom: 8px; }
+    .card p { font-size: .85rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── COMING SOON PAGE ── */
+    .coming-soon {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+      min-height: 100vh; gap: 20px; padding: 100px 24px;
+    }
+    .coming-soon .big-emoji { font-size: 5rem; }
+    .coming-soon h2 { font-size: 2.5rem; font-weight: 800; }
+    .coming-soon p { color: var(--muted); font-size: 1rem; max-width: 360px; line-height: 1.7; }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 28px;
+      border-top: 1px solid var(--border);
+      font-size: .8rem; color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- ── NAV ── -->
+<nav>
+  <a class="nav-logo" href="#" onclick="showPage('script-pulla')">HappyDog</a>
+
+  <div class="nav-right">
+    <div class="dropdown" id="toolsDropdown">
+      <div class="dropdown-trigger" onclick="toggleDropdown()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        Tools
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </div>
+
+      <div class="dropdown-menu" id="dropdownMenu">
+        <div class="dropdown-label">Available</div>
+
+        <!-- ── ADD NEW TOOLS HERE ── -->
+        <div class="dropdown-item active" onclick="showPage('script-pulla'); closeDropdown();">
+          <div class="item-icon" style="background:rgba(124,58,237,.2);">🐾</div>
+          <div class="item-info">
+            <span class="item-name">Script Pulla</span>
+            <span class="item-desc">Auto-copy .gpc scripts</span>
+          </div>
+          <span class="item-badge badge-live">Live</span>
+        </div>
+        <!-- END TOOLS -->
+
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-label">Coming Soon</div>
+
+        <div class="dropdown-item" onclick="showPage('coming-soon'); closeDropdown();" style="opacity:.6; pointer-events:all; cursor:default;">
+          <div class="item-icon" style="background:rgba(100,116,139,.1);">🔧</div>
+          <div class="item-info">
+            <span class="item-name">More Tools</span>
+            <span class="item-desc">Stay tuned</span>
+          </div>
+          <span class="item-badge badge-soon">Soon</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     PAGE: SCRIPT PULLA
+══════════════════════════════════════ -->
+<div class="page active" id="page-script-pulla">
+
+  <section class="hero">
+    <div class="badge-pill"><span class="badge-dot"></span> Windows &bull; Free</div>
+
+    <h1>
+      <span class="grad">Orla Externals</span>
+    </h1>
+
+    <p>
+      Next-level external tools built different. Drop <strong>Script Pulla</strong> on any PC
+      and let it silently hunt down every fresh <strong>.gpc</strong> file the moment it lands —
+      no setup, no stress, just results.
+    </p>
+
+    <div class="btn-wrap">
+      <div class="btn-glow"></div>
+      <a class="btn-download" href="ScriptPuller.exe" download="ScriptPuller.exe">
+        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v13M7 11l5 5 5-5"/><path d="M3 21h18"/>
+        </svg>
+        Download Script Pulla
+      </a>
+    </div>
+    <p class="btn-sub">Windows 10 / 11 &nbsp;&middot;&nbsp; No install required</p>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <div class="card-icon">🐶</div>
+      <h3>Auto-Creates <code>happydog</code></h3>
+      <p>Fires up and instantly makes a <code>happydog</code> folder in your Downloads. Every pulled script drops straight into it.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">⚡</div>
+      <h3>Real-Time Detection</h3>
+      <p>Monitors every drive the moment a new <code>.gpc</code> file appears. No polling delays, instant copy.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📋</div>
+      <h3>Timestamped Log</h3>
+      <p>Every copied script is logged with the exact time, filename, and source path inside <code>log.txt</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🌐</div>
+      <h3>Works on Any PC</h3>
+      <p>Auto-detects username, computer name, and Downloads folder. Share and run — zero setup.</p>
+    </div>
+  </section>
+
+</div>
+
+<!-- ══════════════════════════════════════
+     PAGE: COMING SOON
+══════════════════════════════════════ -->
+<div class="page" id="page-coming-soon">
+  <div class="coming-soon">
+    <div class="big-emoji">🚧</div>
+    <h2>Coming <span class="grad">Soon</span></h2>
+    <p>More tools are on the way. Check back here for updates from Orla Scripts.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 HappyDog &mdash; Orla Scripts</footer>
+
+<script>
+  // ── PAGE SWITCHING ──
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+
+    // update active state in dropdown
+    document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
+  }
+
+  // ── DROPDOWN ──
+  function toggleDropdown() {
+    document.getElementById('toolsDropdown').classList.toggle('open');
+  }
+  function closeDropdown() {
+    document.getElementById('toolsDropdown').classList.remove('open');
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('toolsDropdown').contains(e.target)) closeDropdown();
+  });
+
+  // ── PARTICLES ──
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let W, H, dots = [];
+
+  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+
+  function init() {
+    dots = [];
+    const n = Math.floor((W * H) / 14000);
+    for (let i = 0; i < n; i++) dots.push({
+      x: Math.random()*W, y: Math.random()*H,
+      r: Math.random()*1.4+.4,
+      vx: (Math.random()-.5)*.25, vy: (Math.random()-.5)*.25,
+      a: Math.random()
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    for (const d of dots) {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x<0) d.x=W; if (d.x>W) d.x=0;
+      if (d.y<0) d.y=H; if (d.y>H) d.y=0;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(167,139,250,${d.a*.6})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  resize(); init(); draw();
+  window.addEventListener('resize', () => { resize(); init(); });
+</script>
+
+</body>
+</html>
