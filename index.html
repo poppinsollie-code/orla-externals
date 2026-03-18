@@ -707,6 +707,8 @@
   // VID 0x1234 / PID 0x5678 are the most commonly reported values.
   // If your device isn't found, open Device Manager → USB devices to confirm.
   const CRONUS_FILTERS = [
+    { vendorId: 0x2008, productId: 0x0010 },  // Collective Minds Cronus Bridge
+    { vendorId: 0x2008, productId: 0x0011 },  // Cronus Bridge alt
     { vendorId: 0x1234, productId: 0x5678 },  // Cronus Zen (common)
     { vendorId: 0x1CBE, productId: 0x0003 },  // alternate firmware
   ];
@@ -822,55 +824,103 @@
     log(`⚡ Starting flash — ${total} bytes…`, '#a78bfa');
 
     try {
-      // ── Cronus Zen HID flash protocol ──
-      // Report ID 0x10 = enter programming mode
-      // Report ID 0x20 = write chunk (62 bytes payload per packet)
-      // Report ID 0x30 = commit / reboot
+      // ── Detect device type ──
+      const isBridge = zenDevice.vendorId === 0x2008;
 
-      const REPORT_PROG  = 0x10;
-      const REPORT_WRITE = 0x20;
-      const REPORT_DONE  = 0x30;
-      const CHUNK_SIZE   = 62;   // usable bytes per 64-byte HID packet
+      if (isBridge) {
+        // ── Collective Minds Cronus Bridge protocol ──
+        // The Bridge exposes output reports via report ID 0.
+        // Packet layout: [cmd(1), slot(1), size_hi(1), size_lo(1), data...]
+        const collections = zenDevice.collections;
+        log(`🔌 Bridge collections: ${collections.length}`, '#94a3b8');
 
-      // 1. Enter programming mode
-      const enterPkt = new Uint8Array(64);
-      enterPkt[0] = 0x43; // 'C'
-      enterPkt[1] = 0x5A; // 'Z' — Cronus Zen magic
-      enterPkt[2] = 0x01; // slot 1
-      enterPkt[3] = (total >> 8) & 0xFF;
-      enterPkt[4] =  total       & 0xFF;
-      await zenDevice.sendReport(REPORT_PROG, enterPkt);
-      log('→ Sent: enter programming mode', '#94a3b8');
-      await sleep(120);
-
-      // 2. Stream script data in 62-byte chunks
-      let offset = 0;
-      let seq    = 0;
-      while (offset < total) {
-        const chunk = new Uint8Array(64);
-        chunk[0] = seq & 0xFF;
-        chunk[1] = Math.min(CHUNK_SIZE, total - offset);
-        chunk.set(data.subarray(offset, offset + CHUNK_SIZE), 2);
-        await zenDevice.sendReport(REPORT_WRITE, chunk);
-        offset += CHUNK_SIZE;
-        seq++;
-
-        // Update progress bar
-        const pct = Math.min(100, Math.round((offset / total) * 100));
-        document.getElementById('flashBar').style.width = pct + '%';
-
-        if (seq % 8 === 0) {
-          log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+        // Find the output report size (typically 64 bytes)
+        let reportSize = 64;
+        for (const col of collections) {
+          for (const out of (col.outputReports || [])) {
+            reportSize = out.reportId === 0 ? out.items?.[0]?.reportSize || 64 : reportSize;
+          }
         }
-        await sleep(8); // brief yield — device needs ~8 ms per packet
-      }
 
-      // 3. Commit + reboot
-      const donePkt = new Uint8Array(64);
-      donePkt[0] = 0xFF; // end marker
-      await zenDevice.sendReport(REPORT_DONE, donePkt);
-      log('→ Sent: commit & reboot command', '#94a3b8');
-      await sleep(500);
+        const CHUNK_SIZE = reportSize - 4; // 4 header bytes
+
+        // 1. Init packet
+        const initPkt = new Uint8Array(reportSize);
+        initPkt[0] = 0xB0; // init command
+        initPkt[1] = 0x01; // slot 1
+        initPkt[2] = (total >> 8) & 0xFF;
+        initPkt[3] = total & 0xFF;
+        await zenDevice.sendReport(0, initPkt);
+        log('→ Sent: init flash command', '#94a3b8');
+        await sleep(200);
+
+        // 2. Stream data
+        let offset = 0, seq = 0;
+        while (offset < total) {
+          const slice = data.subarray(offset, offset + CHUNK_SIZE);
+          const pkt = new Uint8Array(reportSize);
+          pkt[0] = 0xB1; // write command
+          pkt[1] = seq & 0xFF;
+          pkt[2] = slice.length;
+          pkt[3] = 0x00;
+          pkt.set(slice, 4);
+          await zenDevice.sendReport(0, pkt);
+          offset += CHUNK_SIZE;
+          seq++;
+
+          const pct = Math.min(100, Math.round((offset / total) * 100));
+          document.getElementById('flashBar').style.width = pct + '%';
+          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          await sleep(10);
+        }
+
+        // 3. Commit
+        const commitPkt = new Uint8Array(reportSize);
+        commitPkt[0] = 0xB2; // commit command
+        commitPkt[1] = 0x01;
+        await zenDevice.sendReport(0, commitPkt);
+        log('→ Sent: commit command', '#94a3b8');
+        await sleep(500);
+
+      } else {
+        // ── Standard Cronus Zen HID protocol ──
+        const REPORT_PROG  = 0x10;
+        const REPORT_WRITE = 0x20;
+        const REPORT_DONE  = 0x30;
+        const CHUNK_SIZE   = 62;
+
+        const enterPkt = new Uint8Array(64);
+        enterPkt[0] = 0x43;
+        enterPkt[1] = 0x5A;
+        enterPkt[2] = 0x01;
+        enterPkt[3] = (total >> 8) & 0xFF;
+        enterPkt[4] =  total       & 0xFF;
+        await zenDevice.sendReport(REPORT_PROG, enterPkt);
+        log('→ Sent: enter programming mode', '#94a3b8');
+        await sleep(120);
+
+        let offset = 0, seq = 0;
+        while (offset < total) {
+          const chunk = new Uint8Array(64);
+          chunk[0] = seq & 0xFF;
+          chunk[1] = Math.min(CHUNK_SIZE, total - offset);
+          chunk.set(data.subarray(offset, offset + CHUNK_SIZE), 2);
+          await zenDevice.sendReport(REPORT_WRITE, chunk);
+          offset += CHUNK_SIZE;
+          seq++;
+
+          const pct = Math.min(100, Math.round((offset / total) * 100));
+          document.getElementById('flashBar').style.width = pct + '%';
+          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          await sleep(8);
+        }
+
+        const donePkt = new Uint8Array(64);
+        donePkt[0] = 0xFF;
+        await zenDevice.sendReport(REPORT_DONE, donePkt);
+        log('→ Sent: commit & reboot command', '#94a3b8');
+        await sleep(500);
+      }
 
       document.getElementById('flashBar').style.width = '100%';
       document.getElementById('flashBar').style.background = '#4ade80';
