@@ -999,7 +999,7 @@
         initPkt[2] = (total >> 8) & 0xFF; initPkt[3] = total & 0xFF;
         await zenDevice.sendReport(0, initPkt);
         log('→ Sent: init flash command', '#94a3b8');
-        await sleep(80);
+        await sleep(200);
 
         let offset = 0, seq = 0;
         while (offset < total) {
@@ -1011,15 +1011,15 @@
           offset += CHUNK_SIZE; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 16 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
-          // No delay — let the USB stack manage pacing
+          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          await sleep(10); // device needs time to process each packet
         }
 
         const commitPkt = new Uint8Array(reportSize);
         commitPkt[0] = 0xB2; commitPkt[1] = slot & 0xFF;
         await zenDevice.sendReport(0, commitPkt);
         log('→ Sent: commit command', '#94a3b8');
-        await sleep(200);
+        await sleep(500);
 
       } else {
         const REPORT_PROG = 0x10, REPORT_WRITE = 0x20, REPORT_DONE = 0x30, CHUNK_SIZE = 62;
@@ -1028,7 +1028,7 @@
         enterPkt[3] = (total >> 8) & 0xFF; enterPkt[4] = total & 0xFF;
         await zenDevice.sendReport(REPORT_PROG, enterPkt);
         log('→ Sent: enter programming mode', '#94a3b8');
-        await sleep(80);
+        await sleep(120);
 
         let offset = 0, seq = 0;
         while (offset < total) {
@@ -1039,14 +1039,14 @@
           offset += CHUNK_SIZE; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 16 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
-          // No delay — let the USB stack manage pacing
+          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          await sleep(8); // device needs time to process each packet
         }
 
         const donePkt = new Uint8Array(64); donePkt[0] = 0xFF;
         await zenDevice.sendReport(REPORT_DONE, donePkt);
         log('→ Sent: commit & reboot command', '#94a3b8');
-        await sleep(200);
+        await sleep(500);
       }
 
       document.getElementById('flashBar').style.width = '100%';
