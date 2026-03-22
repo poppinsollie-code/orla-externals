@@ -215,6 +215,99 @@
     .coming-soon h2 { font-size: 2.5rem; font-weight: 800; }
     .coming-soon p { color: var(--muted); font-size: 1rem; max-width: 360px; line-height: 1.7; }
 
+    /* ── SLOT SELECTOR ── */
+    .slot-grid { display:grid; grid-template-columns:repeat(8,1fr); gap:8px; }
+    .slot-btn {
+      aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; font-size:.72rem; font-weight:700;
+      cursor:pointer; border:2px solid var(--border); background:var(--surface2);
+      color:var(--muted); transition:border-color .2s, background .2s, color .2s;
+      position:relative; gap:3px; padding:4px; overflow:hidden;
+    }
+    .slot-btn:hover { border-color:rgba(124,58,237,.6); color:var(--text); }
+    .slot-btn.selected { border-color:var(--accent1); background:rgba(124,58,237,.15); color:#a78bfa; }
+    .slot-btn.occupied { border-color:rgba(251,191,36,.5); background:rgba(251,191,36,.08); color:#fbbf24; }
+    .slot-btn.occupied.selected { border-color:#fbbf24; background:rgba(251,191,36,.2); }
+    .slot-num { font-size:.95rem; font-weight:900; line-height:1; }
+    .slot-label { font-size:.55rem; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; padding:0 3px; text-align:center; line-height:1.2; }
+    .slot-clear {
+      position:absolute; top:2px; right:2px; width:13px; height:13px;
+      border-radius:50%; background:rgba(239,68,68,.7); border:none; color:#fff;
+      font-size:.5rem; cursor:pointer; display:none; align-items:center; justify-content:center;
+      line-height:1; padding:0;
+    }
+    .slot-btn.occupied .slot-clear { display:flex; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position:fixed; inset:0; z-index:500;
+      background:rgba(0,0,0,.75); backdrop-filter:blur(8px);
+      display:flex; align-items:center; justify-content:center;
+      opacity:0; pointer-events:none; transition:opacity .2s;
+    }
+    .modal-overlay.open { opacity:1; pointer-events:all; }
+    .modal {
+      background:#13131c; border:1px solid var(--border); border-radius:20px;
+      padding:36px; max-width:420px; width:90%;
+      transform:scale(.95); transition:transform .2s;
+      box-shadow:0 32px 64px rgba(0,0,0,.7);
+    }
+    .modal-overlay.open .modal { transform:scale(1); }
+    .modal h3 { font-size:1.1rem; font-weight:800; margin-bottom:8px; }
+    .modal p { font-size:.875rem; color:var(--muted); line-height:1.65; margin-bottom:24px; }
+    .modal-btns { display:flex; gap:10px; }
+    .modal-btns button { flex:1; padding:12px; border-radius:10px; font-size:.875rem; font-weight:700; cursor:pointer; border:1px solid var(--border); transition:filter .15s; }
+    .btn-cancel { background:var(--surface2); color:var(--muted); }
+    .btn-overwrite { background:linear-gradient(135deg,#dc2626,#ef4444); border-color:#dc2626; color:#fff; }
+    .btn-overwrite:hover, .btn-cancel:hover { filter:brightness(1.15); }
+
+    /* ── CATEGORY TABS ── */
+    .cat-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:24px; }
+    .cat-tab {
+      padding:7px 16px; border-radius:999px; border:1px solid var(--border);
+      background:var(--surface2); color:var(--muted); font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:all .15s;
+    }
+    .cat-tab:hover { border-color:rgba(124,58,237,.4); color:var(--text); }
+    .cat-tab.active { border-color:var(--accent1); background:rgba(124,58,237,.15); color:#a78bfa; }
+
+    /* ── UPLOAD FORM ── */
+    .upload-form {
+      background:var(--surface); border:1px solid var(--border);
+      border-radius:16px; padding:24px; margin-bottom:28px;
+    }
+    .upload-form h3 { font-size:.95rem; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+    .form-row { margin-bottom:14px; }
+    .form-row label { display:block; font-size:.72rem; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.06em; }
+    .form-row input, .form-row select, .form-row textarea {
+      width:100%; padding:10px 14px; border-radius:10px;
+      background:var(--surface2); border:1px solid var(--border);
+      color:var(--text); font-size:.875rem; font-family:inherit;
+      outline:none; transition:border-color .2s;
+    }
+    .form-row input:focus, .form-row select:focus, .form-row textarea:focus { border-color:rgba(124,58,237,.5); }
+    .form-row textarea { resize:vertical; min-height:72px; }
+    .form-row select option { background:#13131c; }
+    .upload-drop {
+      border:2px dashed var(--border); border-radius:12px;
+      padding:20px; text-align:center; cursor:pointer;
+      transition:border-color .2s, background .2s;
+    }
+    .upload-drop:hover { border-color:rgba(124,58,237,.5); background:rgba(124,58,237,.04); }
+    .upload-drop.has-file { border-color:rgba(34,197,94,.4); background:rgba(34,197,94,.05); color:#4ade80; }
+    .script-tag {
+      display:inline-block; padding:2px 10px; border-radius:999px;
+      font-size:.65rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+      background:rgba(124,58,237,.15); color:#a78bfa; border:1px solid rgba(124,58,237,.3);
+    }
+    .script-remove {
+      margin-top:auto; padding:8px 14px; border-radius:8px; font-size:.78rem; font-weight:600;
+      background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3); color:#f87171;
+      cursor:pointer; transition:background .15s;
+    }
+    .script-remove:hover { background:rgba(239,68,68,.22); }
+    #communityGrid:empty::after { content:'No scripts in this category yet.'; color:var(--muted); font-size:.875rem; }
+
     /* ── FOOTER ── */
     footer {
       position: relative; z-index: 1;
@@ -475,6 +568,16 @@
       ">Remove</button>
     </div>
 
+    <!-- Slot Selector -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;">
+      <div style="font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+        <span>Target Memory Slot</span>
+        <span id="slotInfo" style="color:#a78bfa;font-size:.78rem;font-weight:600;">Slot 1 selected</span>
+      </div>
+      <div class="slot-grid" id="slotGrid"></div>
+      <p style="font-size:.7rem;color:var(--muted);margin-top:10px;">🟡 Orange = occupied &nbsp;·&nbsp; Click ✕ to clear a slot</p>
+    </div>
+
     <!-- Connect + Flash buttons -->
     <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
       <div class="btn-wrap" style="flex:1;min-width:160px;">
@@ -576,9 +679,9 @@
         <p style="font-size:.78rem;">Connect your Cronus Zen via USB before clicking Connect.</p>
       </div>
       <div class="card" style="padding:20px;">
-        <div class="card-icon" style="font-size:1.4rem;margin-bottom:10px;">⚡</div>
-        <h3 style="font-size:.85rem;">Slot 1</h3>
-        <p style="font-size:.78rem;">Script is flashed to memory slot 1 on the device.</p>
+        <div class="card-icon" style="font-size:1.4rem;margin-bottom:10px;">🎰</div>
+        <h3 style="font-size:.85rem;">Pick Your Slot</h3>
+        <p style="font-size:.78rem;">Choose any of the 8 memory slots. Occupied slots are highlighted — you'll be warned before overwriting.</p>
       </div>
     </div>
 
@@ -597,35 +700,73 @@
     <p>Handpicked <strong>.gpc scripts</strong> — completely free. Click any card to download instantly.</p>
   </section>
 
-  <section style="position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 24px 120px;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
+  <section style="position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px 120px;">
 
-      <!-- Card: Revenant Resurrection -->
-      <div class="card" style="display:flex;flex-direction:column;gap:16px;">
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div class="item-icon" style="background:rgba(124,58,237,.2);width:44px;height:44px;border-radius:12px;font-size:1.5rem;">👻</div>
-          <div>
-            <div style="font-weight:700;font-size:.95rem;">Revenant Resurrection</div>
-            <div style="font-size:.75rem;color:var(--muted);">Private Script &bull; 209 KB</div>
-          </div>
+    <!-- Community Upload Form -->
+    <div class="upload-form">
+      <h3>📤 <span>Share Your Script</span></h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-row">
+          <label>Script Name</label>
+          <input type="text" id="uploadName" placeholder="e.g. AimBot Pro v2" maxlength="60">
         </div>
-        <p style="font-size:.85rem;color:var(--muted);line-height:1.6;">
-          Revenant Resurrection private .gpc script. Flash directly to your Cronus Zen using the Cronus Flasher tool above.
-        </p>
-        <div class="btn-wrap" style="margin-top:auto;">
-          <div class="btn-glow" style="border-radius:10px;"></div>
-          <a class="btn-download" href="Revenant_Resurrection_Private.gpc" download="Revenant_Resurrection_Private.gpc"
-             style="padding:12px 20px;border-radius:10px;font-size:.875rem;justify-content:center;">
-            <svg class="btn-icon" style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 3v13M7 11l5 5 5-5"/><path d="M3 21h18"/>
-            </svg>
-            Download .gpc
-          </a>
+        <div class="form-row">
+          <label>Game / Category</label>
+          <select id="uploadCategory">
+            <option value="other">Other</option>
+            <option value="rust">Rust</option>
+            <option value="r6">Rainbow Six Siege</option>
+            <option value="cod">Call of Duty</option>
+            <option value="warzone">Warzone</option>
+            <option value="fortnite">Fortnite</option>
+            <option value="apex">Apex Legends</option>
+            <option value="bf">Battlefield</option>
+            <option value="pubg">PUBG</option>
+          </select>
         </div>
       </div>
-
+      <div class="form-row">
+        <label>Description</label>
+        <textarea id="uploadDesc" placeholder="Briefly describe what the script does..."></textarea>
+      </div>
+      <div class="form-row">
+        <label>GPC File</label>
+        <div class="upload-drop" id="communityDrop" onclick="document.getElementById('communityFile').click()"
+             ondragover="cdOver(event)" ondragleave="cdLeave(event)" ondrop="cdDrop(event)">
+          <div id="communityDropLabel">📂 Drop .gpc here or click to browse</div>
+          <input type="file" id="communityFile" accept=".gpc" style="display:none" onchange="communityFileChosen(this.files[0])">
+        </div>
+      </div>
+      <div class="btn-wrap" style="margin-top:4px;max-width:220px;">
+        <div class="btn-glow" style="border-radius:10px;"></div>
+        <button onclick="submitCommunityScript()" style="
+          position:relative;width:100%;padding:12px 20px;border-radius:10px;
+          background:linear-gradient(135deg,var(--accent1),var(--accent2));
+          border:none;color:#fff;font-size:.875rem;font-weight:700;cursor:pointer;
+          transition:transform .2s,filter .2s;
+        " onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter=''">
+          📤 Submit Script
+        </button>
+      </div>
     </div>
-    <p style="margin-top:32px;font-size:.8rem;color:var(--muted);text-align:center;">More free scripts coming soon — check back regularly.</p>
+
+    <!-- Category Filter Tabs -->
+    <div class="cat-tabs" id="catTabs">
+      <div class="cat-tab active" data-cat="all" onclick="filterCat('all')">All</div>
+      <div class="cat-tab" data-cat="rust" onclick="filterCat('rust')">Rust</div>
+      <div class="cat-tab" data-cat="r6" onclick="filterCat('r6')">Rainbow Six</div>
+      <div class="cat-tab" data-cat="cod" onclick="filterCat('cod')">CoD</div>
+      <div class="cat-tab" data-cat="warzone" onclick="filterCat('warzone')">Warzone</div>
+      <div class="cat-tab" data-cat="fortnite" onclick="filterCat('fortnite')">Fortnite</div>
+      <div class="cat-tab" data-cat="apex" onclick="filterCat('apex')">Apex</div>
+      <div class="cat-tab" data-cat="bf" onclick="filterCat('bf')">Battlefield</div>
+      <div class="cat-tab" data-cat="pubg" onclick="filterCat('pubg')">PUBG</div>
+      <div class="cat-tab" data-cat="other" onclick="filterCat('other')">Other</div>
+    </div>
+
+    <!-- Script Grid -->
+    <div id="scriptGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;"></div>
+
   </section>
 
 </div>
@@ -641,6 +782,18 @@
   </div>
 </div>
 
+<!-- ── OVERWRITE WARNING MODAL ── -->
+<div class="modal-overlay" id="overwriteModal">
+  <div class="modal">
+    <h3>⚠️ Slot Already Occupied</h3>
+    <p id="overwriteMsg">Slot <strong id="overwriteSlotNum">1</strong> already has <strong id="overwriteScriptName">a script</strong> on it. Flashing will overwrite it permanently. Are you sure?</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeOverwriteModal()">Cancel — Pick Different Slot</button>
+      <button class="btn-overwrite" onclick="confirmFlash()">Overwrite It</button>
+    </div>
+  </div>
+</div>
+
 <footer>&copy; 2026 HappyDog &mdash; Orla Scripts</footer>
 
 <script>
@@ -648,18 +801,12 @@
   function showPage(id) {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-' + id).classList.add('active');
-
-    // update active state in dropdown
     document.querySelectorAll('.dropdown-item').forEach(el => el.classList.remove('active'));
   }
 
   // ── DROPDOWN ──
-  function toggleDropdown() {
-    document.getElementById('toolsDropdown').classList.toggle('open');
-  }
-  function closeDropdown() {
-    document.getElementById('toolsDropdown').classList.remove('open');
-  }
+  function toggleDropdown() { document.getElementById('toolsDropdown').classList.toggle('open'); }
+  function closeDropdown()  { document.getElementById('toolsDropdown').classList.remove('open'); }
   document.addEventListener('click', e => {
     if (!document.getElementById('toolsDropdown').contains(e.target)) closeDropdown();
   });
@@ -668,9 +815,7 @@
   const canvas = document.getElementById('particles');
   const ctx = canvas.getContext('2d');
   let W, H, dots = [];
-
   function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
-
   function init() {
     dots = [];
     const n = Math.floor((W * H) / 14000);
@@ -681,71 +826,87 @@
       a: Math.random()
     });
   }
-
   function draw() {
     ctx.clearRect(0,0,W,H);
     for (const d of dots) {
       d.x += d.vx; d.y += d.vy;
       if (d.x<0) d.x=W; if (d.x>W) d.x=0;
       if (d.y<0) d.y=H; if (d.y>H) d.y=0;
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
-      ctx.fillStyle = `rgba(167,139,250,${d.a*.6})`;
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(167,139,250,${d.a*.6})`; ctx.fill();
     }
     requestAnimationFrame(draw);
   }
-
   resize(); init(); draw();
   window.addEventListener('resize', () => { resize(); init(); });
 
   // ══════════════════════════════════════
+  //  SLOT SELECTOR
+  // ══════════════════════════════════════
+  let selectedSlot = 1;
+  let slotOccupancy = JSON.parse(localStorage.getItem('cronusSlots') || '{}');
+
+  function saveSlots() { localStorage.setItem('cronusSlots', JSON.stringify(slotOccupancy)); }
+
+  function renderSlots() {
+    const grid = document.getElementById('slotGrid');
+    grid.innerHTML = '';
+    for (let s = 1; s <= 8; s++) {
+      const occupied = !!slotOccupancy[s];
+      const btn = document.createElement('div');
+      btn.className = 'slot-btn' + (s === selectedSlot ? ' selected' : '') + (occupied ? ' occupied' : '');
+      btn.innerHTML = `
+        <span class="slot-num">${s}</span>
+        <span class="slot-label">${occupied ? slotOccupancy[s] : 'Empty'}</span>
+        <button class="slot-clear" onclick="event.stopPropagation();clearSlot(${s})" title="Clear slot ${s}">✕</button>
+      `;
+      btn.addEventListener('click', () => selectSlot(s));
+      grid.appendChild(btn);
+    }
+    document.getElementById('slotInfo').textContent =
+      `Slot ${selectedSlot} — ${slotOccupancy[selectedSlot] ? slotOccupancy[selectedSlot] : 'Empty'}`;
+  }
+
+  function selectSlot(n) {
+    selectedSlot = n;
+    renderSlots();
+  }
+
+  function clearSlot(n) {
+    delete slotOccupancy[n];
+    saveSlots();
+    renderSlots();
+    log(`🗑 Slot ${n} cleared.`, '#94a3b8');
+  }
+
+  renderSlots();
+
+  // ══════════════════════════════════════
   //  CRONUS ZEN FLASHER
   // ══════════════════════════════════════
-
-  // Known Cronus Zen HID identifiers
-  // VID 0x1234 / PID 0x5678 are the most commonly reported values.
-  // If your device isn't found, open Device Manager → USB devices to confirm.
   const CRONUS_FILTERS = [
-    { vendorId: 0x2008, productId: 0x0010 },  // Collective Minds Cronus Bridge
-    { vendorId: 0x2008, productId: 0x0011 },  // Cronus Bridge alt
-    { vendorId: 0x1234, productId: 0x5678 },  // Cronus Zen (common)
-    { vendorId: 0x1CBE, productId: 0x0003 },  // alternate firmware
+    { vendorId: 0x2008, productId: 0x0010 },
+    { vendorId: 0x2008, productId: 0x0011 },
+    { vendorId: 0x1234, productId: 0x5678 },
+    { vendorId: 0x1CBE, productId: 0x0003 },
   ];
 
-  let zenDevice   = null;   // connected HIDDevice
-  let gpcFile     = null;   // chosen File object
-  let gpcBytes    = null;   // ArrayBuffer of .gpc contents
+  let zenDevice = null;
+  let gpcFile   = null;
+  let gpcBytes  = null;
 
-  // ── Drop zone helpers ──
-  function dzOver(e) {
-    e.preventDefault();
-    document.getElementById('dropZone').style.borderColor = 'rgba(124,58,237,.7)';
-    document.getElementById('dropZone').style.background  = 'rgba(124,58,237,.06)';
-  }
-  function dzLeave(e) {
-    document.getElementById('dropZone').style.borderColor = '';
-    document.getElementById('dropZone').style.background  = '';
-  }
-  function dzDrop(e) {
-    e.preventDefault();
-    dzLeave(e);
-    const f = e.dataTransfer.files[0];
-    if (f) fileChosen(f);
-  }
+  // ── Drop zone ──
+  function dzOver(e)  { e.preventDefault(); document.getElementById('dropZone').style.borderColor='rgba(124,58,237,.7)'; document.getElementById('dropZone').style.background='rgba(124,58,237,.06)'; }
+  function dzLeave(e) { document.getElementById('dropZone').style.borderColor=''; document.getElementById('dropZone').style.background=''; }
+  function dzDrop(e)  { e.preventDefault(); dzLeave(e); const f=e.dataTransfer.files[0]; if(f) fileChosen(f); }
 
-  // ── File selection ──
   function fileChosen(f) {
     if (!f) return;
-    if (!f.name.toLowerCase().endsWith('.gpc')) {
-      log('⚠ Only .gpc files are supported.', '#f87171');
-      return;
-    }
+    if (!f.name.toLowerCase().endsWith('.gpc')) { log('⚠ Only .gpc files are supported.', '#f87171'); return; }
     gpcFile = f;
     const reader = new FileReader();
     reader.onload = e => { gpcBytes = e.target.result; };
     reader.readAsArrayBuffer(f);
-
     document.getElementById('fileName').textContent = f.name;
     document.getElementById('fileSize').textContent = formatBytes(f.size);
     document.getElementById('filePreview').style.display = 'flex';
@@ -756,217 +917,294 @@
 
   function clearFile() {
     gpcFile = gpcBytes = null;
-    document.getElementById('gpcInput').value       = '';
+    document.getElementById('gpcInput').value = '';
     document.getElementById('filePreview').style.display = 'none';
     document.getElementById('dropZone').style.display    = '';
-    log('File removed.');
-    checkFlashReady();
+    log('File removed.'); checkFlashReady();
   }
 
-  // ── Connect to Cronus Zen via WebHID ──
+  // ── Connect ──
   async function connectZen() {
-    if (!navigator.hid) {
-      log('❌ WebHID is not supported in this browser. Use Chrome or Edge.', '#f87171');
-      return;
-    }
-
-    // If already connected, disconnect
+    if (!navigator.hid) { log('❌ WebHID not supported. Use Chrome or Edge.', '#f87171'); return; }
     if (zenDevice) {
       try { await zenDevice.close(); } catch(_) {}
       zenDevice = null;
       document.getElementById('connectLabel').textContent = 'Connect Cronus Zen';
       document.getElementById('btnConnect').style.background = 'linear-gradient(135deg,#1e3a5f,#0e7490)';
-      log('🔌 Disconnected.');
-      checkFlashReady();
-      return;
+      log('🔌 Disconnected.'); checkFlashReady(); return;
     }
-
     try {
       log('🔍 Requesting HID device access...');
       const devices = await navigator.hid.requestDevice({ filters: CRONUS_FILTERS });
-
       if (!devices.length) {
-        // User cancelled or no match — let them pick any device
         log('⚠ No Cronus Zen found with known IDs. Showing all HID devices...', '#fbbf24');
         const all = await navigator.hid.requestDevice({ filters: [] });
         if (!all.length) { log('❌ No device selected.', '#f87171'); return; }
         zenDevice = all[0];
-      } else {
-        zenDevice = devices[0];
-      }
-
+      } else { zenDevice = devices[0]; }
       if (!zenDevice.opened) await zenDevice.open();
-
       zenDevice.addEventListener('inputreport', onInputReport);
       document.getElementById('connectLabel').textContent = 'Disconnect';
       document.getElementById('btnConnect').style.background = 'linear-gradient(135deg,#14532d,#16a34a)';
       log(`✅ Connected: ${zenDevice.productName} (VID:${hex(zenDevice.vendorId)} PID:${hex(zenDevice.productId)})`, '#4ade80');
       checkFlashReady();
-    } catch(e) {
-      log(`❌ Connection failed: ${e.message}`, '#f87171');
-    }
+    } catch(e) { log(`❌ Connection failed: ${e.message}`, '#f87171'); }
   }
 
-  // ── Receive HID reports from device ──
   function onInputReport(e) {
-    const view = new DataView(e.data.buffer);
     const bytes = [...new Uint8Array(e.data.buffer)].map(b => b.toString(16).padStart(2,'0')).join(' ');
     log(`← [${e.reportId.toString(16).padStart(2,'0')}] ${bytes}`, '#67e8f9');
   }
 
-  // ── Flash script to Cronus Zen ──
-  async function flashScript() {
+  // ── Flash — checks for occupancy first ──
+  function flashScript() {
     if (!zenDevice || !gpcBytes) return;
+    if (slotOccupancy[selectedSlot]) {
+      // Show overwrite warning modal
+      document.getElementById('overwriteSlotNum').textContent = selectedSlot;
+      document.getElementById('overwriteScriptName').textContent = slotOccupancy[selectedSlot];
+      document.getElementById('overwriteModal').classList.add('open');
+    } else {
+      doFlash();
+    }
+  }
 
+  function closeOverwriteModal() { document.getElementById('overwriteModal').classList.remove('open'); }
+  function confirmFlash() { closeOverwriteModal(); doFlash(); }
+
+  // ── Close modal on overlay click ──
+  document.getElementById('overwriteModal').addEventListener('click', function(e) {
+    if (e.target === this) closeOverwriteModal();
+  });
+
+  async function doFlash() {
     const data  = new Uint8Array(gpcBytes);
     const total = data.length;
-
-    log(`⚡ Starting flash — ${total} bytes…`, '#a78bfa');
+    const slot  = selectedSlot;
+    log(`⚡ Flashing to Slot ${slot} — ${total} bytes…`, '#a78bfa');
 
     try {
-      // ── Detect device type ──
       const isBridge = zenDevice.vendorId === 0x2008;
 
       if (isBridge) {
-        // ── Collective Minds Cronus Bridge protocol ──
-        // The Bridge exposes output reports via report ID 0.
-        // Packet layout: [cmd(1), slot(1), size_hi(1), size_lo(1), data...]
         const collections = zenDevice.collections;
-        log(`🔌 Bridge collections: ${collections.length}`, '#94a3b8');
-
-        // Find the output report size (typically 64 bytes)
         let reportSize = 64;
-        for (const col of collections) {
-          for (const out of (col.outputReports || [])) {
-            reportSize = out.reportId === 0 ? out.items?.[0]?.reportSize || 64 : reportSize;
-          }
-        }
+        for (const col of collections)
+          for (const out of (col.outputReports || []))
+            if (out.reportId === 0) reportSize = out.items?.[0]?.reportSize || 64;
 
-        const CHUNK_SIZE = reportSize - 4; // 4 header bytes
-
-        // 1. Init packet
+        const CHUNK_SIZE = reportSize - 4;
         const initPkt = new Uint8Array(reportSize);
-        initPkt[0] = 0xB0; // init command
-        initPkt[1] = 0x01; // slot 1
-        initPkt[2] = (total >> 8) & 0xFF;
-        initPkt[3] = total & 0xFF;
+        initPkt[0] = 0xB0; initPkt[1] = slot & 0xFF;
+        initPkt[2] = (total >> 8) & 0xFF; initPkt[3] = total & 0xFF;
         await zenDevice.sendReport(0, initPkt);
         log('→ Sent: init flash command', '#94a3b8');
-        await sleep(200);
+        await sleep(80);
 
-        // 2. Stream data
         let offset = 0, seq = 0;
         while (offset < total) {
           const slice = data.subarray(offset, offset + CHUNK_SIZE);
           const pkt = new Uint8Array(reportSize);
-          pkt[0] = 0xB1; // write command
-          pkt[1] = seq & 0xFF;
-          pkt[2] = slice.length;
-          pkt[3] = 0x00;
+          pkt[0] = 0xB1; pkt[1] = seq & 0xFF; pkt[2] = slice.length; pkt[3] = 0x00;
           pkt.set(slice, 4);
           await zenDevice.sendReport(0, pkt);
-          offset += CHUNK_SIZE;
-          seq++;
-
+          offset += CHUNK_SIZE; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
-          await sleep(10);
+          if (seq % 16 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          // No delay — let the USB stack manage pacing
         }
 
-        // 3. Commit
         const commitPkt = new Uint8Array(reportSize);
-        commitPkt[0] = 0xB2; // commit command
-        commitPkt[1] = 0x01;
+        commitPkt[0] = 0xB2; commitPkt[1] = slot & 0xFF;
         await zenDevice.sendReport(0, commitPkt);
         log('→ Sent: commit command', '#94a3b8');
-        await sleep(500);
+        await sleep(200);
 
       } else {
-        // ── Standard Cronus Zen HID protocol ──
-        const REPORT_PROG  = 0x10;
-        const REPORT_WRITE = 0x20;
-        const REPORT_DONE  = 0x30;
-        const CHUNK_SIZE   = 62;
-
+        const REPORT_PROG = 0x10, REPORT_WRITE = 0x20, REPORT_DONE = 0x30, CHUNK_SIZE = 62;
         const enterPkt = new Uint8Array(64);
-        enterPkt[0] = 0x43;
-        enterPkt[1] = 0x5A;
-        enterPkt[2] = 0x01;
-        enterPkt[3] = (total >> 8) & 0xFF;
-        enterPkt[4] =  total       & 0xFF;
+        enterPkt[0] = 0x43; enterPkt[1] = 0x5A; enterPkt[2] = slot & 0xFF;
+        enterPkt[3] = (total >> 8) & 0xFF; enterPkt[4] = total & 0xFF;
         await zenDevice.sendReport(REPORT_PROG, enterPkt);
         log('→ Sent: enter programming mode', '#94a3b8');
-        await sleep(120);
+        await sleep(80);
 
         let offset = 0, seq = 0;
         while (offset < total) {
           const chunk = new Uint8Array(64);
-          chunk[0] = seq & 0xFF;
-          chunk[1] = Math.min(CHUNK_SIZE, total - offset);
+          chunk[0] = seq & 0xFF; chunk[1] = Math.min(CHUNK_SIZE, total - offset);
           chunk.set(data.subarray(offset, offset + CHUNK_SIZE), 2);
           await zenDevice.sendReport(REPORT_WRITE, chunk);
-          offset += CHUNK_SIZE;
-          seq++;
-
+          offset += CHUNK_SIZE; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
-          await sleep(8);
+          if (seq % 16 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
+          // No delay — let the USB stack manage pacing
         }
 
-        const donePkt = new Uint8Array(64);
-        donePkt[0] = 0xFF;
+        const donePkt = new Uint8Array(64); donePkt[0] = 0xFF;
         await zenDevice.sendReport(REPORT_DONE, donePkt);
         log('→ Sent: commit & reboot command', '#94a3b8');
-        await sleep(500);
+        await sleep(200);
       }
 
       document.getElementById('flashBar').style.width = '100%';
       document.getElementById('flashBar').style.background = '#4ade80';
-      log(`✅ Flash complete! ${gpcFile.name} is now on your Cronus Zen.`, '#4ade80');
-    } catch(e) {
-      log(`❌ Flash failed: ${e.message}`, '#f87171');
-    }
+      const scriptName = gpcFile.name.replace(/\.gpc$/i, '');
+      log(`✅ Flash complete! "${scriptName}" → Slot ${slot}`, '#4ade80');
+
+      // Mark slot occupied
+      slotOccupancy[slot] = scriptName;
+      saveSlots(); renderSlots();
+
+    } catch(e) { log(`❌ Flash failed: ${e.message}`, '#f87171'); }
   }
 
-  // ── Check if Flash button should be enabled ──
   function checkFlashReady() {
     const ready = !!(zenDevice && gpcBytes);
-    const btn   = document.getElementById('btnFlash');
-    btn.disabled      = !ready;
+    const btn = document.getElementById('btnFlash');
+    btn.disabled = !ready;
     btn.style.opacity = ready ? '1' : '.4';
     btn.style.cursor  = ready ? 'pointer' : 'not-allowed';
     document.getElementById('flashGlow').style.opacity = ready ? '.55' : '0';
-
-    // Show / hide progress bar
-    document.getElementById('flashBar').style.width      = '0%';
+    document.getElementById('flashBar').style.width = '0%';
     document.getElementById('flashBar').style.background = '';
   }
 
   // ── Helpers ──
   function log(msg, color) {
-    const el   = document.getElementById('statusLog');
+    const el = document.getElementById('statusLog');
     const line = document.createElement('div');
     line.textContent = `[${timestamp()}] ${msg}`;
     if (color) line.style.color = color;
     if (el.children.length === 1 && el.children[0].tagName === 'SPAN') el.innerHTML = '';
-    el.appendChild(line);
-    el.scrollTop = el.scrollHeight;
+    el.appendChild(line); el.scrollTop = el.scrollHeight;
   }
-  function clearLog() {
-    document.getElementById('statusLog').innerHTML =
-      '<span style="color:var(--muted);">Waiting for device...</span>';
-  }
-  function timestamp() {
-    return new Date().toLocaleTimeString('en-GB', { hour12:false });
-  }
-  function formatBytes(n) {
-    if (n < 1024) return n + ' B';
-    return (n / 1024).toFixed(1) + ' KB';
-  }
+  function clearLog() { document.getElementById('statusLog').innerHTML = '<span style="color:var(--muted);">Waiting for device...</span>'; }
+  function timestamp() { return new Date().toLocaleTimeString('en-GB', { hour12:false }); }
+  function formatBytes(n) { return n < 1024 ? n + ' B' : (n/1024).toFixed(1) + ' KB'; }
   function hex(n) { return '0x' + n.toString(16).toUpperCase().padStart(4,'0'); }
   function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ══════════════════════════════════════
+  //  FREE DOWNLOADS — COMMUNITY SCRIPTS
+  // ══════════════════════════════════════
+  const CAT_LABELS = { all:'All', rust:'Rust', r6:'Rainbow Six', cod:'CoD', warzone:'Warzone', fortnite:'Fortnite', apex:'Apex', bf:'Battlefield', pubg:'PUBG', other:'Other' };
+  let activeCat = 'all';
+  let communityScripts = JSON.parse(localStorage.getItem('communityScripts') || '[]');
+
+  // Built-in scripts
+  const builtinScripts = [
+    { id:'builtin-1', name:'Revenant Resurrection', category:'other', desc:'Revenant Resurrection private .gpc script. Flash directly to your Cronus Zen using the Cronus Flasher.', file:'Revenant_Resurrection_Private.gpc', size:'209 KB', builtin:true }
+  ];
+
+  function renderScripts() {
+    const grid = document.getElementById('scriptGrid');
+    grid.innerHTML = '';
+    const all = [...builtinScripts, ...communityScripts];
+    const filtered = activeCat === 'all' ? all : all.filter(s => s.category === activeCat);
+    if (!filtered.length) {
+      grid.innerHTML = '<p style="color:var(--muted);font-size:.875rem;grid-column:1/-1;">No scripts in this category yet.</p>';
+      return;
+    }
+    filtered.forEach(script => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.cssText = 'display:flex;flex-direction:column;gap:14px;';
+      card.innerHTML = `
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="item-icon" style="background:rgba(124,58,237,.2);width:44px;height:44px;border-radius:12px;font-size:1.4rem;flex-shrink:0;">📜</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${script.name}</div>
+            <div style="font-size:.72rem;color:var(--muted);margin-top:2px;">${script.size || '.gpc script'}</div>
+          </div>
+          <span class="script-tag">${CAT_LABELS[script.category] || script.category}</span>
+        </div>
+        <p style="font-size:.83rem;color:var(--muted);line-height:1.6;flex:1;">${script.desc || ''}</p>
+        <div style="display:flex;gap:8px;margin-top:auto;align-items:center;">
+          ${script.builtin
+            ? `<div class="btn-wrap" style="flex:1;"><div class="btn-glow" style="border-radius:10px;"></div><a class="btn-download" href="${script.file}" download="${script.file}" style="padding:10px 16px;border-radius:10px;font-size:.82rem;justify-content:center;display:flex;align-items:center;gap:8px;text-decoration:none;"><svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M3 21h18"/></svg>Download .gpc</a></div>`
+            : `<div class="btn-wrap" style="flex:1;"><div class="btn-glow" style="border-radius:10px;"></div><button onclick="downloadCommunity('${script.id}')" style="position:relative;width:100%;padding:10px 16px;border-radius:10px;background:linear-gradient(135deg,var(--accent1),var(--accent2));border:none;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5"/><path d="M3 21h18"/></svg>Download .gpc</button></div>
+               <button class="script-remove" onclick="removeCommunityScript('${script.id}')">Remove</button>`
+          }
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function filterCat(cat) {
+    activeCat = cat;
+    document.querySelectorAll('.cat-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+    renderScripts();
+  }
+
+  // Community upload helpers
+  let communityGpcFile = null, communityGpcBytes = null;
+
+  function cdOver(e) { e.preventDefault(); document.getElementById('communityDrop').style.borderColor='rgba(124,58,237,.5)'; }
+  function cdLeave(e) { document.getElementById('communityDrop').style.borderColor=''; }
+  function cdDrop(e) { e.preventDefault(); cdLeave(e); communityFileChosen(e.dataTransfer.files[0]); }
+
+  function communityFileChosen(f) {
+    if (!f) return;
+    if (!f.name.toLowerCase().endsWith('.gpc')) { alert('Only .gpc files are supported.'); return; }
+    communityGpcFile = f;
+    const reader = new FileReader();
+    reader.onload = e => { communityGpcBytes = e.target.result; };
+    reader.readAsArrayBuffer(f);
+    document.getElementById('communityDropLabel').textContent = `✅ ${f.name} (${formatBytes(f.size)})`;
+    document.getElementById('communityDrop').classList.add('has-file');
+  }
+
+  function submitCommunityScript() {
+    const name = document.getElementById('uploadName').value.trim();
+    const cat  = document.getElementById('uploadCategory').value;
+    const desc = document.getElementById('uploadDesc').value.trim();
+    if (!name) { alert('Please enter a script name.'); return; }
+    if (!communityGpcFile) { alert('Please select a .gpc file.'); return; }
+
+    const id = 'com-' + Date.now();
+    // Store as base64 so it can be downloaded later
+    const arr = new Uint8Array(communityGpcBytes);
+    const b64 = btoa(String.fromCharCode(...arr));
+
+    communityScripts.unshift({ id, name, category:cat, desc, size: formatBytes(communityGpcFile.size), fileName: communityGpcFile.name, data: b64 });
+    localStorage.setItem('communityScripts', JSON.stringify(communityScripts));
+
+    // Reset form
+    document.getElementById('uploadName').value = '';
+    document.getElementById('uploadDesc').value = '';
+    document.getElementById('uploadCategory').value = 'other';
+    communityGpcFile = communityGpcBytes = null;
+    document.getElementById('communityDropLabel').textContent = '📂 Drop .gpc here or click to browse';
+    document.getElementById('communityDrop').classList.remove('has-file');
+    document.getElementById('communityFile').value = '';
+
+    renderScripts();
+  }
+
+  function downloadCommunity(id) {
+    const s = communityScripts.find(x => x.id === id);
+    if (!s) return;
+    const bin = atob(s.data);
+    const arr = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+    const blob = new Blob([arr], { type: 'application/octet-stream' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = s.fileName || s.name + '.gpc';
+    a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  function removeCommunityScript(id) {
+    communityScripts = communityScripts.filter(s => s.id !== id);
+    localStorage.setItem('communityScripts', JSON.stringify(communityScripts));
+    renderScripts();
+  }
+
+  renderScripts();
 </script>
 
 </body>
