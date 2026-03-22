@@ -987,38 +987,42 @@
       const isBridge = zenDevice.vendorId === 0x2008;
 
       if (isBridge) {
-        const collections = zenDevice.collections;
-        let reportSize = 64;
-        for (const col of collections)
-          for (const out of (col.outputReports || []))
-            if (out.reportId === 0) reportSize = out.items?.[0]?.reportSize || 64;
+        // Cronus Bridge always uses 64-byte reports.
+        // NOTE: HIDReportItem.reportSize is in BITS, not bytes — do NOT use it for packet sizing.
+        const PKT  = 64;   // fixed packet size in bytes
+        const CHUNK = 60;  // 64 - 4 header bytes
 
-        const CHUNK_SIZE = reportSize - 4;
-        const initPkt = new Uint8Array(reportSize);
+        log(`🔌 Bridge detected — 64-byte packets, ${CHUNK}-byte chunks, slot ${slot}`, '#94a3b8');
+
+        // 1. Init
+        const initPkt = new Uint8Array(PKT);
         initPkt[0] = 0xB0; initPkt[1] = slot & 0xFF;
         initPkt[2] = (total >> 8) & 0xFF; initPkt[3] = total & 0xFF;
         await zenDevice.sendReport(0, initPkt);
-        log('→ Sent: init flash command', '#94a3b8');
+        log(`→ Init: slot=${slot} size=${total}`, '#94a3b8');
         await sleep(200);
 
+        // 2. Stream data chunks
         let offset = 0, seq = 0;
         while (offset < total) {
-          const slice = data.subarray(offset, offset + CHUNK_SIZE);
-          const pkt = new Uint8Array(reportSize);
+          const end   = Math.min(offset + CHUNK, total);
+          const slice = data.subarray(offset, end);
+          const pkt   = new Uint8Array(PKT);
           pkt[0] = 0xB1; pkt[1] = seq & 0xFF; pkt[2] = slice.length; pkt[3] = 0x00;
           pkt.set(slice, 4);
           await zenDevice.sendReport(0, pkt);
-          offset += CHUNK_SIZE; seq++;
+          offset += slice.length; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 8 === 0) log(`→ ${pct}% (${Math.min(offset,total)} / ${total} bytes)`, '#94a3b8');
-          await sleep(10); // device needs time to process each packet
+          if (seq % 8 === 0) log(`→ ${pct}% (${offset} / ${total} bytes)`, '#94a3b8');
+          await sleep(10);
         }
 
-        const commitPkt = new Uint8Array(reportSize);
+        // 3. Commit
+        const commitPkt = new Uint8Array(PKT);
         commitPkt[0] = 0xB2; commitPkt[1] = slot & 0xFF;
         await zenDevice.sendReport(0, commitPkt);
-        log('→ Sent: commit command', '#94a3b8');
+        log('→ Commit sent — waiting for device…', '#94a3b8');
         await sleep(500);
 
       } else {
