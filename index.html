@@ -905,14 +905,16 @@
     if (!f.name.toLowerCase().endsWith('.gpc')) { log('⚠ Only .gpc files are supported.', '#f87171'); return; }
     gpcFile = f;
     const reader = new FileReader();
-    reader.onload = e => { gpcBytes = e.target.result; };
+    reader.onload = e => {
+      gpcBytes = e.target.result;
+      checkFlashReady(); // enable button only after bytes are ready
+    };
     reader.readAsArrayBuffer(f);
     document.getElementById('fileName').textContent = f.name;
     document.getElementById('fileSize').textContent = formatBytes(f.size);
     document.getElementById('filePreview').style.display = 'flex';
     document.getElementById('dropZone').style.display    = 'none';
     log(`📄 Loaded: ${f.name} (${formatBytes(f.size)})`);
-    checkFlashReady();
   }
 
   function clearFile() {
