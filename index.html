@@ -1013,45 +1013,50 @@
         const PKT   = 64;
         const CHUNK = 60;
 
-        log(`🔌 Bridge — 64-byte pkts, slot ${slot}`, '#94a3b8');
+        // ── REAL PROTOCOL captured from Cronus Zen Marketplace ──
+        // Erase: 0xE2  |  Write: 0xF3 0xFC  |  Commit: TBD
 
-        // 1. Init — send and wait for ACK
-        const initPkt = new Uint8Array(PKT);
-        initPkt[0] = 0xB0; initPkt[1] = slot & 0xFF;
-        initPkt[2] = (total >> 8) & 0xFF; initPkt[3] = total & 0xFF;
-        await zenDevice.sendReport(0, initPkt);
-        logBytes('→ Init sent', initPkt);
-        const initResp = await waitForReport(1500);
-        if (initResp) logBytes('← Init resp', initResp);
-        else log('← No response to init (may still work)', '#fbbf24');
-        await sleep(100);
+        // 1. Erase slot
+        log(`🗑 Erasing slot ${slot}…`, '#fbbf24');
+        const erasePkt = new Uint8Array(PKT);
+        erasePkt[0] = 0xE2; erasePkt[1] = 0x00;
+        erasePkt[2] = 0x00; erasePkt[3] = slot & 0xFF;
+        await zenDevice.sendReport(0, erasePkt);
+        logBytes('→ Erase', erasePkt);
+        const eraseResp = await waitForReport(2000);
+        if (eraseResp) logBytes('← Erase resp', eraseResp);
+        else log('← No erase response', '#94a3b8');
+        await sleep(500); // flash erase takes time
 
-        // 2. Stream data chunks
+        // 2. Stream GPC file in 60-byte chunks using real write command
+        log(`📤 Streaming ${total} bytes…`, '#94a3b8');
         let offset = 0, seq = 0;
         while (offset < total) {
           const end   = Math.min(offset + CHUNK, total);
           const slice = data.subarray(offset, end);
           const pkt   = new Uint8Array(PKT);
-          pkt[0] = 0xB1; pkt[1] = seq & 0xFF; pkt[2] = slice.length; pkt[3] = 0x00;
+          pkt[0] = 0xF3; pkt[1] = 0xFC; pkt[2] = slot & 0xFF; pkt[3] = 0x00;
           pkt.set(slice, 4);
           await zenDevice.sendReport(0, pkt);
           offset += slice.length; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 8 === 0) log(`→ ${pct}% (${offset}/${total} bytes)`, '#94a3b8');
+          if (seq % 16 === 0) log(`→ ${pct}% (${offset}/${total} bytes)`, '#94a3b8');
           await sleep(10);
         }
-        log(`→ All ${seq} chunks sent`, '#94a3b8');
+        log(`→ All ${seq} packets sent`, '#94a3b8');
 
-        // 3. Commit — send and wait for ACK
+        // 3. Commit — trying E3 (need confirmation from marketplace capture)
+        log('→ Sending commit…', '#94a3b8');
         const commitPkt = new Uint8Array(PKT);
-        commitPkt[0] = 0xB2; commitPkt[1] = slot & 0xFF;
+        commitPkt[0] = 0xE3; commitPkt[1] = 0x00;
+        commitPkt[2] = 0x00; commitPkt[3] = slot & 0xFF;
         await zenDevice.sendReport(0, commitPkt);
         logBytes('→ Commit sent', commitPkt);
-        const commitResp = await waitForReport(2000);
+        const commitResp = await waitForReport(3000);
         if (commitResp) logBytes('← Commit resp', commitResp);
-        else log('← No response to commit', '#fbbf24');
-        await sleep(300);
+        else log('← No commit response', '#94a3b8');
+        await sleep(500);
 
       } else {
         const REPORT_PROG = 0x10, REPORT_WRITE = 0x20, REPORT_DONE = 0x30, CHUNK_SIZE = 62;
