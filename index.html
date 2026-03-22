@@ -1013,29 +1013,32 @@
         const PKT   = 64;
         const CHUNK = 60;
 
-        // ── REAL PROTOCOL captured from Cronus Zen Marketplace ──
-        // Erase: 0xE2  |  Write: 0xF3 0xFC  |  Commit: TBD
+        // ── VERIFIED PROTOCOL from Cronus Zen Marketplace packet capture ──
+        // Erase:    E2 00 00 [slot]
+        // Write:    F2 80 C4 00 [60 bytes]
+        // Commit1:  20 00 00 [slot]
+        // Commit2:  FB 00 00 [slot]
 
         // 1. Erase slot
         log(`🗑 Erasing slot ${slot}…`, '#fbbf24');
         const erasePkt = new Uint8Array(PKT);
         erasePkt[0] = 0xE2; erasePkt[1] = 0x00;
-        erasePkt[2] = 0x00; erasePkt[3] = slot & 0xFF;
+        erasePkt[2] = 0x00; erasePkt[3] = slot;
         await zenDevice.sendReport(0, erasePkt);
         logBytes('→ Erase', erasePkt);
         const eraseResp = await waitForReport(2000);
         if (eraseResp) logBytes('← Erase resp', eraseResp);
         else log('← No erase response', '#94a3b8');
-        await sleep(500); // flash erase takes time
+        await sleep(500);
 
-        // 2. Stream GPC file in 60-byte chunks using real write command
-        log(`📤 Streaming ${total} bytes…`, '#94a3b8');
+        // 2. Stream GPC file in 60-byte chunks
+        log(`📤 Writing ${total} bytes to Slot ${slot}…`, '#94a3b8');
         let offset = 0, seq = 0;
         while (offset < total) {
           const end   = Math.min(offset + CHUNK, total);
           const slice = data.subarray(offset, end);
           const pkt   = new Uint8Array(PKT);
-          pkt[0] = 0xF3; pkt[1] = 0xFC; pkt[2] = slot & 0xFF; pkt[3] = 0x00;
+          pkt[0] = 0xF2; pkt[1] = 0x80; pkt[2] = 0xC4; pkt[3] = 0x00;
           pkt.set(slice, 4);
           await zenDevice.sendReport(0, pkt);
           offset += slice.length; seq++;
@@ -1044,18 +1047,27 @@
           if (seq % 16 === 0) log(`→ ${pct}% (${offset}/${total} bytes)`, '#94a3b8');
           await sleep(10);
         }
-        log(`→ All ${seq} packets sent`, '#94a3b8');
+        log(`→ ${seq} packets sent`, '#94a3b8');
 
-        // 3. Commit — trying E3 (need confirmation from marketplace capture)
-        log('→ Sending commit…', '#94a3b8');
-        const commitPkt = new Uint8Array(PKT);
-        commitPkt[0] = 0xE3; commitPkt[1] = 0x00;
-        commitPkt[2] = 0x00; commitPkt[3] = slot & 0xFF;
-        await zenDevice.sendReport(0, commitPkt);
-        logBytes('→ Commit sent', commitPkt);
-        const commitResp = await waitForReport(3000);
-        if (commitResp) logBytes('← Commit resp', commitResp);
-        else log('← No commit response', '#94a3b8');
+        // 3. Two-step commit (both captured from marketplace)
+        log('→ Committing…', '#94a3b8');
+
+        const c1 = new Uint8Array(PKT);
+        c1[0] = 0x20; c1[1] = 0x00; c1[2] = 0x00; c1[3] = slot;
+        await zenDevice.sendReport(0, c1);
+        logBytes('→ Commit 1', c1);
+        const r1 = await waitForReport(2000);
+        if (r1) logBytes('← Resp 1', r1);
+        else log('← No commit 1 response', '#94a3b8');
+        await sleep(200);
+
+        const c2 = new Uint8Array(PKT);
+        c2[0] = 0xFB; c2[1] = 0x00; c2[2] = 0x00; c2[3] = slot;
+        await zenDevice.sendReport(0, c2);
+        logBytes('→ Commit 2', c2);
+        const r2 = await waitForReport(3000);
+        if (r2) logBytes('← Resp 2', r2);
+        else log('← No commit 2 response', '#94a3b8');
         await sleep(500);
 
       } else {
