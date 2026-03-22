@@ -979,6 +979,27 @@
     if (e.target === this) closeOverwriteModal();
   });
 
+  // Wait for a single inputreport from the device (with timeout)
+  function waitForReport(ms = 1500) {
+    return new Promise(resolve => {
+      const timer = setTimeout(() => {
+        zenDevice.removeEventListener('inputreport', h);
+        resolve(null); // timeout — no response
+      }, ms);
+      function h(e) {
+        clearTimeout(timer);
+        zenDevice.removeEventListener('inputreport', h);
+        resolve(new Uint8Array(e.data.buffer));
+      }
+      zenDevice.addEventListener('inputreport', h);
+    });
+  }
+
+  function logBytes(label, arr) {
+    const hex = [...arr.slice(0, 8)].map(b => b.toString(16).padStart(2,'0')).join(' ');
+    log(`${label} [${hex}…]`, '#67e8f9');
+  }
+
   async function doFlash() {
     const data  = new Uint8Array(gpcBytes);
     const total = data.length;
@@ -989,20 +1010,21 @@
       const isBridge = zenDevice.vendorId === 0x2008;
 
       if (isBridge) {
-        // Cronus Bridge always uses 64-byte reports.
-        // NOTE: HIDReportItem.reportSize is in BITS, not bytes — do NOT use it for packet sizing.
-        const PKT  = 64;   // fixed packet size in bytes
-        const CHUNK = 60;  // 64 - 4 header bytes
+        const PKT   = 64;
+        const CHUNK = 60;
 
-        log(`🔌 Bridge detected — 64-byte packets, ${CHUNK}-byte chunks, slot ${slot}`, '#94a3b8');
+        log(`🔌 Bridge — 64-byte pkts, slot ${slot}`, '#94a3b8');
 
-        // 1. Init
+        // 1. Init — send and wait for ACK
         const initPkt = new Uint8Array(PKT);
         initPkt[0] = 0xB0; initPkt[1] = slot & 0xFF;
         initPkt[2] = (total >> 8) & 0xFF; initPkt[3] = total & 0xFF;
         await zenDevice.sendReport(0, initPkt);
-        log(`→ Init: slot=${slot} size=${total}`, '#94a3b8');
-        await sleep(200);
+        logBytes('→ Init sent', initPkt);
+        const initResp = await waitForReport(1500);
+        if (initResp) logBytes('← Init resp', initResp);
+        else log('← No response to init (may still work)', '#fbbf24');
+        await sleep(100);
 
         // 2. Stream data chunks
         let offset = 0, seq = 0;
@@ -1016,16 +1038,20 @@
           offset += slice.length; seq++;
           const pct = Math.min(100, Math.round((offset / total) * 100));
           document.getElementById('flashBar').style.width = pct + '%';
-          if (seq % 8 === 0) log(`→ ${pct}% (${offset} / ${total} bytes)`, '#94a3b8');
+          if (seq % 8 === 0) log(`→ ${pct}% (${offset}/${total} bytes)`, '#94a3b8');
           await sleep(10);
         }
+        log(`→ All ${seq} chunks sent`, '#94a3b8');
 
-        // 3. Commit
+        // 3. Commit — send and wait for ACK
         const commitPkt = new Uint8Array(PKT);
         commitPkt[0] = 0xB2; commitPkt[1] = slot & 0xFF;
         await zenDevice.sendReport(0, commitPkt);
-        log('→ Commit sent — waiting for device…', '#94a3b8');
-        await sleep(500);
+        logBytes('→ Commit sent', commitPkt);
+        const commitResp = await waitForReport(2000);
+        if (commitResp) logBytes('← Commit resp', commitResp);
+        else log('← No response to commit', '#fbbf24');
+        await sleep(300);
 
       } else {
         const REPORT_PROG = 0x10, REPORT_WRITE = 0x20, REPORT_DONE = 0x30, CHUNK_SIZE = 62;
